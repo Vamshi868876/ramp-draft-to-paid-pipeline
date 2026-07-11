@@ -13,7 +13,8 @@ auto_pay()
 
 # every day
 
-schedule.every(1).minutes.do(auto_pay)
+schedule.every().day.at("09:00").do(auto_pay)
+schedule.every().day.at("17:00").do(auto_pay)
 
 
 

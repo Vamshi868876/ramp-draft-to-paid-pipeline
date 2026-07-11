@@ -1,3 +1,4 @@
+import datetime
 from ramp_api import RampAPI
 
 
@@ -55,10 +56,22 @@ def auto_pay():
                 }
                 clean_line_items.append(clean_item)
 
+            issued_at_str = draft.get("issued_at")[:10] if draft.get("issued_at") else None
+            
+            # Enforce Net 45 terms if issued_at is available
+            due_at_str = draft.get("due_at")[:10] if draft.get("due_at") else None
+            if issued_at_str:
+                try:
+                    issued_date = datetime.datetime.strptime(issued_at_str, "%Y-%m-%d")
+                    due_date = issued_date + datetime.timedelta(days=45)
+                    due_at_str = due_date.strftime("%Y-%m-%d")
+                except ValueError:
+                    pass
+
             new_bill_payload = {
                 "invoice_number": draft.get("invoice_number"),
-                "issued_at": draft.get("issued_at")[:10] if draft.get("issued_at") else None,
-                "due_at": draft.get("due_at")[:10] if draft.get("due_at") else None,
+                "issued_at": issued_at_str,
+                "due_at": due_at_str,
                 "invoice_currency": draft.get("currency", "USD"),
                 "entity_id": draft.get("entity_id"), 
                 "vendor_id": vendor_id,
